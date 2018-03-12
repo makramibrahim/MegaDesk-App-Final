@@ -1,0 +1,82 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+    Page.Title = "Delete a Quote";
+
+    var clientName = "";
+    var quoteDate = DateTime.Now;
+    var deskWidth = 0;
+    var deskDepth = 0;
+    var material = "";
+    var deskDrawers = 0;
+    var rushDays = 0;
+    var PriceQuote = 0;
+    var quoteId = "";
+
+    if (!IsPost)
+    {
+        if (!Request.QueryString["ID"].IsEmpty() && Request.QueryString["ID"].IsInt())
+        {
+            quoteId = Request.QueryString["ID"];
+            var db = Database.OpenConnectionString("Data Source=|DataDirectory|\\MegaDeskDB.sdf", "System.Data.SqlServerCe.4.0");
+            var dbCommand = "SELECT * FROM MegaDeskTB WHERE ID = @0";
+            var row = db.QuerySingle(dbCommand, quoteId);
+            if (row != null)
+            {
+                clientName = row.ClientName;
+                quoteDate = DateTime.Parse(row.OrderDate.ToString());
+                deskWidth = int.Parse(row.DeskWidth.ToString());
+                deskDepth = int.Parse(row.DeskDepth.ToString());
+                material = row.Material;
+                deskDrawers = int.Parse(row.DeskDrawers.ToString());
+                rushDays = int.Parse(row.RushDays.ToString());
+                PriceQuote = int.Parse(row.PriceQuote.ToString());
+            }
+
+            else
+            {
+                Validation.AddFormError("No quotes were for that ID.");
+
+            }
+        }
+        else
+        {
+            Validation.AddFormError("No quotes were found for that ID.");
+
+        }
+    }
+
+    if (IsPost && !Request["buttonDelete"].IsEmpty())
+    {
+        quoteId = Request.Form["quoteId"];
+        var db = Database.OpenConnectionString("Data Source=|DataDirectory|\\MegaDeskDB.sdf", "System.Data.SqlServerCe.4.0");
+        var deleteCommand = "DELETE FROM MegaDeskTB WHERE ID = @0";
+        db.Execute(deleteCommand, quoteId);
+        Response.Redirect("~/DisplayQuote.cshtml");
+    }
+
+}
+
+<div class="container">
+    <h2>Delete a Quote</h2>
+    @Html.ValidationSummary()
+    <form method="post">
+        <fieldset>
+            <legend>Quote Information</legend>
+
+            <div class="alert alert-dismissible alert-warning">
+                <h4 class="alert-heading"> Delete!</h4><br />
+                <p class="mb-0"> <span><b>Date: </b>@DateTime.Now</span></p><hr />
+                <p class="mb-0"><span><b>Client Name: </b> @clientName</span></p><hr />
+                <p class="mb-0"> <span><b>Rush Days: </b> @rushDays</span></p><hr />
+                <p class="mb-0"> <span><b>Material: </b> @material</span></p><hr />
+                <p class="mb-0"> <span><b>Desk Width: </b> @deskWidth</span></p><hr />
+                <p class="mb-0"> <span><b>Desk Depth: </b> @deskDepth</span></p><hr />
+                <p class="mb-0"> <span><b>Drawers: </b> @deskDrawers</span></p><hr />
+                <p class="mb-0"> <span><b>Price Quote: </b>$@PriceQuote</span></p><hr />
+            </div>
+            <input type="hidden" name="quoteId" value="@quoteId" />
+            <p><input class="btn btn-warning" type="submit" name="buttonDelete" value="Delete Quote" /></p>
+        </fieldset>
+    </form>
+</div>
+

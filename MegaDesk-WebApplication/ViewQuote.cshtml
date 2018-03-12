@@ -1,0 +1,48 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+    Page.Title = "Disply Quote";
+
+    var db = Database.OpenConnectionString("Data Source=|DataDirectory|\\MegaDeskDB.sdf", "System.Data.SqlServerCe.4.0");
+    var selectCommand = "SELECT * FROM MegaDesktb";
+    var searchTerm = "";
+
+    if (!Request.QueryString["searchQuote"].IsEmpty())
+    {
+        selectCommand = "SELECT TOP 1 * FROM MegaDesktb ORDER BY D";
+        searchTerm = "%" + Request["searchQuote"] + "%";
+    }
+
+    var selectedData = db.Query(selectCommand, searchTerm);
+    var grid = new WebGrid(source: selectedData, rowsPerPage: 1);
+}
+
+
+
+<div class="container">
+    <h2>Order Confirmation</h2>
+
+    @Html.ValidationSummary()
+    <form method="post">
+        <fieldset>
+            <div class="alert alert-dismissible">
+               
+
+
+                                    @*//<p class="mb-0"><span><b>Client Name: </b> @clientName</span></p><hr />
+                                    //<p class="mb-0"> <span><b>Rush Days: </b> @rushDays</span></p><hr />
+                                    //<p class="mb-0"> <span><b>Material: </b> @material</span></p><hr />
+                                    //<p class="mb-0"> <span><b>Desk Width: </b> @deskWidth</span></p><hr />
+                                    //<p class="mb-0"> <span><b>Desk Depth: </b> @deskDepth</span></p><hr />
+                                    //<p class="mb-0"> <span><b>Drawers: </b> @deskDrawers</span></p><hr />
+                                    //<p class="mb-0"> <span><b>Price Quote: </b>$@PriceQuote</span></p><hr />*@
+
+
+
+
+            </div>
+            @*<input type="hidden" name="quoteId" value="@quoteId" />*@
+            <p><input class="btn btn-success" type="submit" name="confirmBtn" value="Place Order" /></p>
+        </fieldset>
+    </form>
+</div>
+

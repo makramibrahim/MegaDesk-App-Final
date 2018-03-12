@@ -1,0 +1,129 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+    Page.Title = "Add new Quote";
+
+    MegaDesk_WebApplication.DeskQuote deskQuote = new MegaDesk_WebApplication.DeskQuote();
+
+    Validation.RequireField("clientName", "*");
+    Validation.RequireField("deskWidth", "*");
+    Validation.Add("deskWidth", Validator.Range(12, 96, "Width must be between 12 and 96"));
+
+    Validation.RequireField("deskDepth", "*");
+    Validation.Add("deskDepth", Validator.Range(12, 48, "Depth must be between 12 and 48"));
+
+    Validation.RequireField("material", "*");
+    Validation.RequireField("rushDays", "*");
+
+
+
+    var clientName = "";
+    var quoteDate = DateTime.Now;
+    var deskWidth = 0;
+    var deskDepth = 0;
+    var material = "";
+    var deskDrawers = 0;
+    var rushDays = 0;
+    var PriceQuote = 0;
+
+
+    if (IsPost)
+    {
+        if (Validation.IsValid())
+        {
+
+            clientName = Request.Form["ClientName"];
+            deskWidth = int.Parse(Request.Form["DeskWidth"]);
+            deskDepth = int.Parse(Request.Form["DeskDepth"]);
+            material = Request.Form["Material"];
+            deskDrawers = int.Parse(Request.Form["DeskDrawers"]);
+            rushDays = int.Parse(Request.Form["RushDays"]);
+           
+
+
+            /*************************************************
+            * GET the total cost: 
+            * ***********************************************/
+
+            Enum.TryParse(material, out MegaDesk_WebApplication.SurfaceMaterials surfaceMaterials);
+            deskQuote = new MegaDesk_WebApplication.DeskQuote(clientName, quoteDate, deskWidth, deskDepth, deskDrawers, surfaceMaterials, rushDays);
+
+            var db = Database.OpenConnectionString("Data Source=|DataDirectory|\\MegaDeskDB.sdf");
+            var insertCommand = "INSERT INTO MegaDeskTB (ClientName, RushDays, Material, DeskWidth, DeskDepth, OrderDate, PriceQuote, DeskDrawers) VALUES(@0, @1, @2, @3, @4, @5, @6, @7)";
+
+
+            PriceQuote = int.Parse(deskQuote.CalQuoteTotal().ToString());
+
+            //rushDays = deskQuote.RushOrderCost();
+
+            db.Execute(insertCommand, clientName, rushDays, material, deskWidth, deskDepth, quoteDate, PriceQuote, deskDrawers);
+
+            Response.Redirect("~/DisplayQuote.cshtml");
+        }
+    }
+}
+
+<div class="container" style="margin-bottom:200px;">
+    <h2>New Quote</h2><br />
+    <form class="form-group" method="post">
+        <p name="deskDepth" value="@DateTime.Now">@quoteDate</p>
+        <div class="row">
+            <div class="col">
+
+                @Html.ValidationMessage("clientName")
+                <label class="col-form-label" for="inputDefault">Client Name</label>
+                <input type="text" class="form-control" name="clientName" value="@Request.Form["clientName"]" />
+
+                @Html.ValidationMessage("rushDays")
+                <label class="col-form-label" for="inputDefault">Rush Days</label>
+                @*<input type="text" class="form-control" name="rushDays" value="@Request.Form["rushDays"]" />*@
+                <select class="form-control" name="rushDays" value="@Request.Form["rushDays"]">
+                    <option>0</option>
+                    <option>3</option>
+                    <option>5</option>
+                    <option>7</option>
+                </select>
+
+
+                @Html.ValidationMessage("material")
+                <label class="col-form-label" for="inputDefault">Material</label>
+                @*<input type="text" class="form-control" value="@Request.Form["material"]" />*@
+                <select class="form-control" name="material" value="@Request.Form["material"]">
+                    <option></option>
+                    <option>Laminate</option>
+                    <option>Oak</option>
+                    <option>Rosewood</option>
+                    <option>Veneer</option>
+                    <option>Pine</option>
+                </select>
+
+            </div>
+            <div class="col">
+
+                @Html.ValidationMessage("deskWidth")
+                <label class="col-form-label" for="inputDefault">Desk Width</label>
+                <input type="text" class="form-control" name="deskWidth" value="@Request.Form["deskWidth"]" />
+
+                @Html.ValidationMessage("deskDepth")
+                <label class="col-form-label" for="inputDefault">Desk Depth</label>
+                <input type="text" class="form-control" name="deskDepth" value="@Request.Form["deskDpeth"]" />
+
+                @Html.ValidationMessage("deskDrawers")
+                <label class="col-form-label" for="inputDefault">Drawers</label>
+                @*<input type="text" class="form-control" name="deskDrawers" value="@Request.Form["deskDrawers"]" />*@
+
+                <select class="form-control" name="deskDrawers" value="@Request.Form["deskDrawers"]">
+                    @for (int i = 1; i <= 7; i++)
+                    {
+                        <option>@i</option>
+                    }
+
+                </select>
+
+
+                @*<p type="text" class="form-control" name="priceQuote" value="@priceQuote"></p>*@
+            </div>
+        </div>
+        <br>
+        <button class="btn btn-success" type="submit" name="SubmitBtn" value="New Quote">Submit Order</button>
+    </form>
+</div>
